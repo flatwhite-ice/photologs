@@ -37,6 +37,7 @@
         { id: "apsc", name: "APS-C (소니·니콘·후지)", w: 23.5, h: 15.6 },
         { id: "apsc-canon", name: "APS-C (캐논)", w: 22.3, h: 14.9 },
         { id: "apsh", name: "APS-H (캐논 1D)", w: 28.7, h: 19.0 },
+        { id: "leica-m8", name: "Leica M8 (APS-H 1.33×)", w: 27, h: 18 },
         { id: "one-inch", name: '1인치 (RX100 등)', w: 13.2, h: 8.8 }
       ]
     },

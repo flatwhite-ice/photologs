@@ -79,6 +79,18 @@
       var collapsed = sheet.classList.toggle("sheet-collapsed");
       handle.setAttribute("aria-expanded", String(!collapsed));
     });
+
+    // 모바일: 결과를 아래로 스크롤하면 시트 자동 접힘(펼침은 핸들 탭으로만)
+    var mq = window.matchMedia("(max-width: 760px)");
+    var lastY = window.scrollY;
+    window.addEventListener("scroll", function () {
+      var y = window.scrollY;
+      if (mq.matches && y > lastY + 4 && y > 40 && !sheet.classList.contains("sheet-collapsed")) {
+        sheet.classList.add("sheet-collapsed");
+        handle.setAttribute("aria-expanded", "false");
+      }
+      lastY = y;
+    }, { passive: true });
   }
 
   function onFormatChange() {
