@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>photologs</title>
+  <meta name="description" content="사진과 글로 남기는 기록">
+  <link rel="stylesheet" href="../shared/style.css">
+  <!-- 테마는 깜빡임 방지를 위해 먼저 -->
+  <script src="../shared/theme.js"></script>
+</head>
+<body>
+  <script src="../shared/nav.js" data-home="./" data-brand="photologs"></script>
+
+  <section class="hero">
+    <h1>photologs</h1>
+    <p>사진과 글로 남기는 기록</p>
+  </section>
+
+  <div class="wrap wrap--wide">
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid">
+      <div class="empty">불러오는 중…</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var grid = document.getElementById("grid");
+      var filters = document.getElementById("filters");
+      var posts = [];
+      var active = "전체";
+
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+
+      fetch("posts.json")
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (data) {
+          // 최신순 정렬
+          posts = data.slice().sort(function (a, b) {
+            return (b.date || "").localeCompare(a.date || "");
+          });
+          buildFilters();
+          renderCards();
+        })
+        .catch(function () {
+          grid.innerHTML = '<div class="empty">아직 릴리즈된 글이 없습니다.</div>';
+        });
+
+      function buildFilters() {
+        var set = {};
+        posts.forEach(function (p) { (p.tags || []).forEach(function (t) { set[t] = 1; }); });
+        var tags = ["전체"].concat(Object.keys(set).sort());
+        if (tags.length <= 1) return; // 태그 없으면 필터 숨김
+        filters.innerHTML = tags.map(function (t) {
+          return '<button class="chip' + (t === active ? " is-active" : "") +
+                 '" data-tag="' + esc(t) + '">' + esc(t) + "</button>";
+        }).join("");
+        filters.addEventListener("click", function (e) {
+          var btn = e.target.closest(".chip");
+          if (!btn) return;
+          active = btn.dataset.tag;
+          filters.querySelectorAll(".chip").forEach(function (c) {
+            c.classList.toggle("is-active", c.dataset.tag === active);
+          });
+          renderCards();
+        });
+      }
+
+      function renderCards() {
+        var list = active === "전체"
+          ? posts
+          : posts.filter(function (p) { return (p.tags || []).indexOf(active) !== -1; });
+
+        if (!list.length) {
+          grid.innerHTML = '<div class="empty">해당 태그의 글이 없습니다.</div>';
+          return;
+        }
+
+        grid.innerHTML = list.map(function (p) {
+          var href = encodeURI(p.slug + "/");
+          var cover = p.cover
+            ? '<div class="card__media"><img class="card__cover" src="' + esc(p.cover) +
+              '" alt="" loading="lazy"></div>'
+            : "";
+          var tags = (p.tags || []).map(function (t) {
+            return '<span class="tag">' + esc(t) + "</span>";
+          }).join("");
+          return (
+            '<article class="card reveal">' +
+              '<a href="' + href + '">' + cover +
+                '<div class="card__body">' +
+                  '<div class="card__meta">' + esc(p.date || "") + "</div>" +
+                  '<h2 class="card__title">' + esc(p.title) + "</h2>" +
+                  (p.excerpt ? '<p class="card__excerpt">' + esc(p.excerpt) + "</p>" : "") +
+                  '<div class="card__tags">' + tags + "</div>" +
+                "</div>" +
+              "</a>" +
+            "</article>"
+          );
+        }).join("");
+
+        reveal();
+      }
+
+      function reveal() {
+        var items = grid.querySelectorAll(".reveal");
+        if (!("IntersectionObserver" in window)) {
+          items.forEach(function (el) { el.classList.add("is-visible"); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: .1 });
+        items.forEach(function (el) { io.observe(el); });
+      }
+    })();
+  </script>
+</body>
+</html>
