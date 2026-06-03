@@ -186,14 +186,6 @@
     setStat($("r-aperture"), eN, function (v) { return "f/" + fmtNum(v, 1); });
     $("r-aperture-sub").textContent = "심도·배경흐림이 FF 환산값과 동일";
 
-    $("r-crop").textContent = "×" + crop.toFixed(3);
-    $("r-diag").innerHTML = fmtNum(C.diag(f), 1) + "<small> mm</small>";
-
-    var longD = Math.max(f.w, f.h), shortD = Math.min(f.w, f.h);
-    $("r-aov-long").textContent = fmtNum(C.aov(longD, focal), 1) + "°";
-    $("r-aov-short").textContent = fmtNum(C.aov(shortD, focal), 1) + "°";
-    $("r-aov-diag").textContent = fmtNum(C.aov(C.diag(f), focal), 1) + "°";
-
     $("est-flag").innerHTML = f.est ? '<span class="badge-est">추정 데이터</span>' : "";
 
     // 실제 심도 (고급 펼침 시)
@@ -216,35 +208,78 @@
     var sum = $("sheet-summary");
     if (sum) sum.textContent = f.name + " · " + fmtNum(focal, 1) + "mm · f/" + fmtNum(N, 1);
 
-    drawViz(f);
+    drawViz(f, focal);
   }
 
-  /* ---------- SVG 프레임 비교 (가로=장변) ---------- */
-  function drawViz(f) {
-    var W = 400, H = 220, pad = 30, cx = W / 2, cy = H / 2;
+  /* ---------- 통합 시각화: 프레임(상단) + 화각 부채꼴(하단) ---------- */
+  function drawViz(f, focal) {
+    var W = 360;
     var ff = C.FF;
     var fmtLong = Math.max(f.w, f.h), fmtShort = Math.min(f.w, f.h);
     var ffLong = Math.max(ff.w, ff.h), ffShort = Math.min(ff.w, ff.h);
+    var crop = C.cropFactor(f), diag = C.diag(f);
+    var aLong = C.aov(fmtLong, focal), aShort = C.aov(fmtShort, focal), aDiag = C.aov(diag, focal);
 
-    var maxHalfW = Math.max(fmtLong, ffLong) / 2;
-    var maxHalfH = Math.max(fmtShort, ffShort) / 2;
-    var scale = Math.min((W / 2 - pad) / maxHalfW, (H / 2 - pad - 8) / maxHalfH);
+    function esc(s) { return escapeXml(s); }
+    function n(v) { return v.toFixed(1); }
 
-    function rect(longMm, shortMm, cls) {
-      var w = longMm * scale, h = shortMm * scale;
-      return '<rect class="' + cls + '" x="' + (cx - w / 2).toFixed(1) +
-        '" y="' + (cy - h / 2).toFixed(1) + '" width="' + w.toFixed(1) +
-        '" height="' + h.toFixed(1) + '" rx="2"/>';
+    /* ===== 상단: 프레임 + 치수 + 대각선 + 크롭 ===== */
+    var topCx = 180, topCy = 95;
+    var maxHalfW = Math.max(fmtLong, ffLong) / 2, maxHalfH = Math.max(fmtShort, ffShort) / 2;
+    var scale = Math.min((W / 2 - 56) / maxHalfW, (75) / maxHalfH);
+    var fw = fmtLong * scale, fh = fmtShort * scale;       // 포맷 사각형 px
+    var ffw = ffLong * scale, ffh = ffShort * scale;       // FF 사각형 px
+    var fx = topCx - fw / 2, fy = topCy - fh / 2;
+
+    function rect(w, h, cls) {
+      return '<rect class="' + cls + '" x="' + n(topCx - w / 2) + '" y="' + n(topCy - h / 2) +
+        '" width="' + n(w) + '" height="' + n(h) + '" rx="2"/>';
     }
+    var top =
+      rect(fw, fh, "v-frame-fmt") +
+      rect(ffw, ffh, "v-frame-ff") +
+      // 대각선
+      '<line class="v-diag" x1="' + n(fx) + '" y1="' + n(fy) + '" x2="' + n(fx + fw) + '" y2="' + n(fy + fh) + '"/>' +
+      // 치수: 장변(위) · 단변(오른쪽)
+      '<text class="v-dim" x="' + topCx + '" y="' + n(fy - 8) + '" text-anchor="middle">' + esc(fmtLong + " mm") + '</text>' +
+      '<text class="v-dim" x="' + n(fx + fw + 8) + '" y="' + n(topCy) + '" dominant-baseline="middle">' + esc(fmtShort) + '</text>' +
+      // 대각 mm (대각선 중앙 위)
+      '<text class="v-diag-lbl" x="' + n(topCx + 6) + '" y="' + n(topCy - 4) + '">' + esc("대각 " + n(diag) + "mm") + '</text>' +
+      // 크롭 배지(좌상단)
+      '<text class="v-badge" x="14" y="22">' + esc("크롭 ×" + crop.toFixed(crop < 1 ? 3 : 2)) + '</text>' +
+      // 포맷명 / FF 캡션
+      '<text class="v-name" x="' + topCx + '" y="184" text-anchor="middle">' + esc(f.name) + '</text>' +
+      '<text class="v-cap" x="346" y="22" text-anchor="end">▱ 풀프레임</text>';
 
-    var fmtH = fmtShort * scale;
-    var svg =
-      rect(ffLong, ffShort, "frame-ff") +
-      rect(fmtLong, fmtShort, "frame-fmt") +
-      '<text class="lbl-accent" x="' + cx + '" y="' + (cy - fmtH / 2 - 8).toFixed(1) +
-        '" text-anchor="middle">' + escapeXml(f.name) + "</text>" +
-      '<text x="' + (W - 8) + '" y="' + (H - 8) + '" text-anchor="end">- - 풀프레임</text>';
-    $("viz").innerHTML = svg;
+    /* ===== 하단: 화각 부채꼴 ===== */
+    var ax = 180, ay = 338;                                 // 꼭지점
+    function ray(theta, r) {                                 // 수직축 기준 ±θ/2
+      var h = theta * Math.PI / 360;                         // θ/2 in rad
+      return { lx: ax - r * Math.sin(h), ly: ay - r * Math.cos(h),
+               rx: ax + r * Math.sin(h), ry: ay - r * Math.cos(h) };
+    }
+    function wedge(theta, r, cls) {
+      var p = ray(theta, r);
+      var big = theta > 180 ? 1 : 0;
+      return '<path class="' + cls + '" d="M' + n(ax) + ' ' + n(ay) + ' L' + n(p.lx) + ' ' + n(p.ly) +
+        ' A' + n(r) + ' ' + n(r) + ' 0 ' + big + ' 1 ' + n(p.rx) + ' ' + n(p.ry) + ' Z"/>';
+    }
+    // 라벨은 각 링(부채꼴 띠) 중앙에 세로로 쌓아 겹치지 않게
+    function ringLabel(y, text, cls) {
+      return '<text class="v-ang ' + cls + '" x="' + ax + '" y="' + y + '" text-anchor="middle">' + esc(text) + '</text>';
+    }
+    var bottom =
+      '<line class="v-axis" x1="' + ax + '" y1="' + ay + '" x2="' + ax + '" y2="216"/>' +
+      wedge(aDiag, 120, "v-fan v-fan-3") +
+      wedge(aLong, 96, "v-fan v-fan-2") +
+      wedge(aShort, 72, "v-fan v-fan-1") +
+      '<circle class="v-apex" cx="' + ax + '" cy="' + ay + '" r="3.5"/>' +
+      ringLabel(232, "대각 " + n(aDiag) + "°", "v-ang-3") +
+      ringLabel(259, "장변 " + n(aLong) + "°", "v-ang-2") +
+      ringLabel(286, "단변 " + n(aShort) + "°", "v-ang-1") +
+      '<text class="v-sub" x="14" y="210">화각 (시야각)</text>';
+
+    $("viz").innerHTML = top + bottom;
   }
 
   function escapeXml(s) {

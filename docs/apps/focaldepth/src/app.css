@@ -2,16 +2,16 @@
 
 .app { padding: 28px 20px 96px; }
 
-.app__intro { padding: 18px 0 26px; }
+.app__intro { padding: 10px 0 18px; }
 .app__intro .app__kicker {
-  margin: 0 0 4px; font-size: 13px; font-weight: 700; letter-spacing: .14em;
+  margin: 0 0 2px; font-size: 12px; font-weight: 700; letter-spacing: .14em;
   text-transform: uppercase; color: var(--accent);
 }
 .app__intro h1 {
-  font-size: clamp(28px, 5vw, 40px);
-  letter-spacing: -.03em; margin: 0 0 8px;
+  font-size: clamp(26px, 5vw, 38px); line-height: 1.1;
+  letter-spacing: -.03em; margin: 0 0 4px;
 }
-.app__intro p { color: var(--muted); margin: 0; font-size: 17px; }
+.app__intro p { color: var(--muted); margin: 0; font-size: 15px; line-height: 1.45; }
 
 /* 2단 레이아웃: 입력 / 결과 */
 .app__grid {
@@ -46,44 +46,60 @@
 }
 .field:focus-within > label { color: var(--accent); }
 
-select, .input-unit input {
+/* 셀렉트 */
+select {
   width: 100%; font: inherit; color: var(--text);
-  background: var(--surface-2);
+  background-color: var(--surface-2);
   border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  padding: 11px 12px; min-height: 44px;
+  padding: 11px 34px 11px 12px; min-height: 44px;
   -webkit-appearance: none; appearance: none;
-  transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background-color .2s var(--ease);
 }
-/* 숫자 스피너·datalist 드롭다운 화살표 제거 (값이 잘려 보이는 문제 방지) */
+select:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft); background-color: var(--surface);
+}
+
+/* 숫자 + 슬라이더 한 줄 */
+.combo { display: grid; grid-template-columns: 118px 1fr; gap: 12px; align-items: center; }
+
+/* 숫자 입력 필드 — 래퍼가 테두리를 갖고 입력은 투명. 단위는 양옆에 정적(flex) 배치 */
+.input-unit {
+  display: flex; align-items: center; gap: 8px;
+  background-color: var(--surface-2);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 0 12px; min-height: 44px;
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background-color .2s var(--ease);
+}
+.input-unit:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.input-unit:focus-within {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); background-color: var(--surface);
+}
+.input-unit input {
+  flex: 1 1 auto; min-width: 0; width: 100%;
+  border: none; background: none; outline: none; padding: 0; min-height: 0;
+  font: inherit; font-weight: 600; color: var(--text);
+  font-variant-numeric: tabular-nums; text-align: left;
+}
 .input-unit input::-webkit-outer-spin-button,
 .input-unit input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .input-unit input::-webkit-calendar-picker-indicator { display: none !important; }
 
-select:hover, .input-unit input:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
-select:focus, input:focus {
-  outline: none; border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft); background: var(--surface);
+/* 단위 라벨: 기본 = 접미(숫자 오른쪽), .input-unit--prefix = 접두(숫자 왼쪽) */
+.input-unit::after, .input-unit--prefix::before {
+  flex: none; font-size: 12px; font-weight: 700; color: var(--muted);
+  transition: color .2s var(--ease);
 }
-/* 포맷 셀렉트에 ▾ 표시 */
-select {
-  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
-  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 34px;
-}
-
-/* 숫자 + 슬라이더 한 줄 */
-.combo { display: grid; grid-template-columns: 104px 1fr; gap: 12px; align-items: center; }
-
-/* 단위 어드ーー먼트 */
-.input-unit { position: relative; display: block; }
-.input-unit input { text-align: right; padding-right: 34px; font-variant-numeric: tabular-nums; font-weight: 600; }
-.input-unit::after {
-  content: attr(data-unit); position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-  font-size: 12px; font-weight: 700; color: var(--muted); pointer-events: none; transition: color .2s var(--ease);
-}
+.input-unit::after { content: attr(data-unit); }
+.input-unit::before { display: none; }
 .input-unit:focus-within::after { color: var(--accent); }
-.input-unit--prefix input { text-align: left; padding-left: 30px; padding-right: 12px; }
-.input-unit--prefix::after { left: 11px; right: auto; }
+.input-unit--prefix::after { display: none; }
+.input-unit--prefix::before { display: block; content: attr(data-unit); }
+.input-unit--prefix:focus-within::before { color: var(--accent); }
 
 input[type="range"] {
   width: 100%; -webkit-appearance: none; appearance: none;
@@ -194,12 +210,35 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
   vertical-align: middle;
 }
 
-/* SVG 시각화 */
+/* SVG 통합 시각화 (프레임 + 화각 부채꼴) */
 .viz { width: 100%; display: block; }
-.viz text { fill: var(--muted); font-size: 13px; font-family: var(--font); }
-.viz .frame-ff { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 4; }
-.viz .frame-fmt { fill: color-mix(in srgb, var(--accent) 14%, transparent); stroke: var(--accent); stroke-width: 2; }
-.viz .lbl-accent { fill: var(--accent); font-weight: 700; }
+.viz text { fill: var(--muted); font-size: 12px; font-family: var(--font); }
+
+/* 프레임 */
+.viz .v-frame-ff { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.viz .v-frame-fmt { fill: color-mix(in srgb, var(--accent) 13%, transparent); stroke: var(--accent); stroke-width: 2; }
+.viz .v-diag { stroke: color-mix(in srgb, var(--accent) 55%, transparent); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.viz .v-dim { fill: var(--text); font-size: 12px; font-weight: 600; }
+.viz .v-diag-lbl { fill: var(--accent); font-size: 11px; font-weight: 600; }
+.viz .v-name { fill: var(--accent); font-size: 13px; font-weight: 800; }
+.viz .v-cap { fill: var(--muted); font-size: 11px; }
+.viz .v-badge { fill: var(--accent); font-size: 12px; font-weight: 800; }
+
+/* 화각 부채꼴 */
+.viz .v-axis { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 3; }
+.viz .v-fan { stroke: var(--accent); stroke-width: 1.5; }
+.viz .v-fan-1 { fill: color-mix(in srgb, var(--accent) 22%, transparent); }
+.viz .v-fan-2 { fill: color-mix(in srgb, var(--accent) 12%, transparent); }
+.viz .v-fan-3 { fill: color-mix(in srgb, var(--accent) 6%, transparent); }
+.viz .v-apex { fill: var(--accent); }
+.viz .v-ang {
+  font-size: 12px; font-weight: 700;
+  paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round;
+}
+.viz .v-ang-1 { fill: color-mix(in srgb, var(--accent) 70%, var(--text)); }
+.viz .v-ang-2 { fill: var(--accent); }
+.viz .v-ang-3 { fill: var(--accent); }
+.viz .v-sub { fill: var(--muted); font-size: 11px; font-weight: 700; }
 
 /* 데이터 주석 */
 .notes { margin-top: 26px; }
