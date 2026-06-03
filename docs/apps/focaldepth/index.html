@@ -39,7 +39,7 @@
             <label for="focal">초점거리</label>
             <div class="combo">
               <span class="input-unit" data-unit="mm">
-                <input type="number" id="focal" min="1" max="2000" step="0.1" value="80" inputmode="decimal">
+                <input type="text" id="focal" inputmode="decimal" value="80" aria-label="초점거리 입력">
               </span>
               <input type="range" id="focal-range" min="1" max="600" step="1" value="80" aria-label="초점거리 슬라이더">
             </div>
@@ -49,7 +49,7 @@
             <label for="fnumber">조리개</label>
             <div class="combo">
               <span class="input-unit input-unit--prefix" data-unit="f/">
-                <input type="number" id="fnumber" min="0.5" max="128" step="0.1" value="2.8" list="stops" inputmode="decimal">
+                <input type="text" id="fnumber" inputmode="decimal" value="2.8" list="stops" aria-label="조리개 입력">
               </span>
               <input type="range" id="fnumber-range" min="0" max="12" step="1" value="3" aria-label="조리개 슬라이더">
             </div>
@@ -68,7 +68,7 @@
               <label for="distance">초점 맞춘 거리</label>
               <div class="combo">
                 <span class="input-unit" data-unit="m">
-                  <input type="number" id="distance" min="0.1" max="1000" step="0.1" value="3" inputmode="decimal">
+                  <input type="text" id="distance" inputmode="decimal" value="3" aria-label="초점 거리 입력">
                 </span>
                 <input type="range" id="distance-range" min="0.1" max="50" step="0.1" value="3" aria-label="초점 거리 슬라이더">
               </div>
@@ -82,13 +82,13 @@
       <section class="results">
         <section class="result-hero" id="result-hero" aria-live="polite">
           <div class="result-hero__item">
-            <span class="result-hero__label">환산 초점거리 · FF</span>
+            <span class="result-hero__label"><span class="lbl-long">환산 초점거리 · FF</span><span class="lbl-short">환산 초점·FF</span></span>
             <span class="result-hero__value" id="r-focal">—</span>
             <span class="result-hero__sub" id="r-focal-sub"></span>
           </div>
           <div class="result-hero__divider" aria-hidden="true"></div>
           <div class="result-hero__item">
-            <span class="result-hero__label">환산 조리개 · 심도 등가</span>
+            <span class="result-hero__label"><span class="lbl-long">환산 조리개 · 심도 등가</span><span class="lbl-short">환산 심도</span></span>
             <span class="result-hero__value" id="r-aperture">—</span>
             <span class="result-hero__sub" id="r-aperture-sub"></span>
           </div>

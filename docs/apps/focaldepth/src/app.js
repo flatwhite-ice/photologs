@@ -69,6 +69,18 @@
     function (v) { return v; },
     function (v) { return Math.min(50, Math.max(0.1, v)); });
 
+  // 포커스 시 캐럿을 값 끝으로 — 모바일에서 뒤에서부터 지우며 수정하기 편하게.
+  // (탭의 기본 캐럿 배치 뒤에 실행되도록 rAF로 지연)
+  ["focal", "fnumber", "distance"].forEach(function (id) {
+    var el = $(id);
+    el.addEventListener("focus", function () {
+      requestAnimationFrame(function () {
+        var n = el.value.length;
+        try { el.setSelectionRange(n, n); } catch (e) {}
+      });
+    });
+  });
+
   $("advanced").addEventListener("toggle", update);
   fmtSel.addEventListener("change", onFormatChange);
 
