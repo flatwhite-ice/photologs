@@ -27,9 +27,16 @@
     if (window.PhotologsTheme) window.PhotologsTheme.toggle();
   });
 
-  // 푸터
-  var footer = document.createElement("footer");
-  footer.className = "site-footer";
-  footer.innerHTML = "© " + new Date().getFullYear() + " " + brand;
-  document.body.appendChild(footer);
+  // 푸터 — 본문(<main> 등)이 모두 파싱된 뒤 맨 끝에 추가
+  function addFooter() {
+    var footer = document.createElement("footer");
+    footer.className = "site-footer";
+    footer.innerHTML = "© " + new Date().getFullYear() + " " + brand;
+    document.body.appendChild(footer);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", addFooter);
+  } else {
+    addFooter();
+  }
 })();

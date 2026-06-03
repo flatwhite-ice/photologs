@@ -20,6 +20,7 @@ README.md            저장소 설명 (발행 대상 아님)
 docs/                ← GitHub Pages 사이트 루트
   index.html         루트 → releases/ 로 이동
   releases/          발행된 페이지 + 메인 메뉴(index.html) + posts.json(매니페스트)
+  apps/              인터랙티브 정적 앱 (focaldepth: 포맷별 화각·심도 환산기 — apps/focaldepth/SPEC.md)
   drafts/            작성 중인 페이지 (_template/ 복사해서 시작)
   shared/            공통 스타일/스크립트 (style.css, theme.js, nav.js, page.js, vendor/marked)
   .nojekyll          Jekyll 비활성화 (지우지 말 것)
