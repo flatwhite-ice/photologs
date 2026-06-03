@@ -83,9 +83,14 @@
     // 모바일: 결과를 아래로 스크롤하면 시트 자동 접힘(펼침은 핸들 탭으로만)
     var mq = window.matchMedia("(max-width: 760px)");
     var lastY = window.scrollY;
+    // 시트 입력칸 편집 중(키보드 표시 등)에는 자동 접힘 금지 — 키보드 표시가
+    // 일으키는 스크롤 이벤트로 시트가 오동작 최소화되는 버그 방지.
+    var editing = false;
+    sheet.addEventListener("focusin", function () { editing = true; });
+    sheet.addEventListener("focusout", function () { editing = false; lastY = window.scrollY; });
     window.addEventListener("scroll", function () {
       var y = window.scrollY;
-      if (mq.matches && y > lastY + 4 && y > 40 && !sheet.classList.contains("sheet-collapsed")) {
+      if (!editing && mq.matches && y > lastY + 4 && y > 40 && !sheet.classList.contains("sheet-collapsed")) {
         sheet.classList.add("sheet-collapsed");
         handle.setAttribute("aria-expanded", "false");
       }

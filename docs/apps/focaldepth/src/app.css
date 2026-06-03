@@ -54,6 +54,12 @@ select, input[type="number"] {
   -webkit-appearance: none; appearance: none;
   transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
 }
+/* 숫자 스피너·datalist 드롭다운 화살표 제거 (값이 잘려 보이는 문제 방지) */
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"]::-webkit-calendar-picker-indicator { display: none !important; }
+
 select:hover, input[type="number"]:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
 select:focus, input:focus {
   outline: none; border-color: var(--accent);
@@ -213,23 +219,39 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
   /* 접힘: 핸들만 노출 */
   #inputs.sheet-collapsed { transform: translateY(calc(100% - 64px)); }
 
-  /* 핸들 (시트 상단 고정) */
+  /* 핸들 (시트 상단 고정) — 가시성 강조 */
   #inputs .sheet-handle {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 12px;
     position: sticky; top: 0; z-index: 1;
-    width: 100%; height: 64px; padding: 0 4px;
+    width: 100%; min-height: 64px; padding: 16px 6px 12px;
     background: var(--surface); border: none; cursor: pointer;
     font: inherit; color: var(--text); text-align: left;
+    transition: background .25s var(--ease);
   }
+  /* 접힘 상태 → accent 톤으로 '탭하여 펼치기' 신호 강조 */
+  #inputs.sheet-collapsed .sheet-handle { background: var(--accent-soft); }
+
   .sheet-handle__grip {
-    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-    width: 40px; height: 5px; border-radius: 999px; background: var(--border);
+    position: absolute; top: 7px; left: 50%; transform: translateX(-50%);
+    width: 52px; height: 5px; border-radius: 999px;
+    background: var(--muted); opacity: .55;
   }
+  #inputs.sheet-collapsed .sheet-handle__grip { background: var(--accent); opacity: .9; }
+
   .sheet-handle__summary {
-    flex: 1; font-size: 14px; font-weight: 700; color: var(--text);
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-top: 6px;
+    flex: 1; font-size: 15px; font-weight: 700; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .sheet-handle__chevron { color: var(--muted); transition: transform .32s var(--ease); padding-top: 6px; }
+  #inputs.sheet-collapsed .sheet-handle__summary { color: var(--accent); }
+
+  /* 셰브론 → 눈에 띄는 accent 원형 버튼 */
+  .sheet-handle__chevron {
+    flex: none; display: inline-grid; place-items: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 17px; line-height: 1;
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 45%, transparent);
+    transition: transform .32s var(--ease);
+  }
   #inputs.sheet-collapsed .sheet-handle__chevron { transform: rotate(180deg); }
 
   #inputs .sheet-body { padding: 4px 0 8px; }
@@ -237,5 +259,5 @@ input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #inputs.panel, .sheet-handle__chevron { transition: none; }
+  #inputs.panel, #inputs .sheet-handle, .sheet-handle__chevron { transition: none; }
 }
