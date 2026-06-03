@@ -20,64 +20,79 @@
     </header>
 
     <div class="app__grid">
-      <!-- 입력 -->
-      <section class="panel sticky inputs">
-        <div class="field">
-          <label for="format">포맷</label>
-          <select id="format" aria-label="포맷 선택"></select>
-          <div class="hint" id="format-note"></div>
-        </div>
+      <!-- 입력 (모바일에서는 하단 고정 시트) -->
+      <section class="panel sticky inputs" id="inputs">
+        <button class="sheet-handle" id="sheet-handle" type="button" aria-expanded="true" aria-controls="inputs">
+          <span class="sheet-handle__grip" aria-hidden="true"></span>
+          <span class="sheet-handle__summary" id="sheet-summary">입력값 조절</span>
+          <span class="sheet-handle__chevron" aria-hidden="true">▾</span>
+        </button>
 
-        <div class="field">
-          <label for="focal">초점거리 (mm)</label>
-          <div class="combo">
-            <input type="number" id="focal" min="1" max="2000" step="0.1" value="58">
-            <input type="range" id="focal-range" min="1" max="600" step="1" value="58">
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="fnumber">조리개 (f)</label>
-          <div class="combo">
-            <input type="number" id="fnumber" min="0.5" max="128" step="0.1" value="5.6" list="stops">
-            <input type="range" id="fnumber-range" min="0" max="12" step="1" value="5">
-          </div>
-          <datalist id="stops">
-            <option value="1.0"></option><option value="1.4"></option><option value="2.0"></option>
-            <option value="2.8"></option><option value="4.0"></option><option value="5.6"></option>
-            <option value="8"></option><option value="11"></option><option value="16"></option>
-            <option value="22"></option><option value="32"></option><option value="45"></option>
-            <option value="64"></option>
-          </datalist>
-        </div>
-
-        <details class="advanced" id="advanced">
-          <summary>고급 · 실제 심도 계산</summary>
+        <div class="sheet-body">
           <div class="field">
-            <label for="distance">초점 맞춘 거리 (m)</label>
-            <div class="combo">
-              <input type="number" id="distance" min="0.1" max="1000" step="0.1" value="3">
-              <input type="range" id="distance-range" min="0.1" max="50" step="0.1" value="3">
-            </div>
-            <div class="hint" id="coc-hint"></div>
+            <label for="format">포맷</label>
+            <select id="format" aria-label="포맷 선택"></select>
+            <div class="hint" id="format-note"></div>
           </div>
-        </details>
+
+          <div class="field">
+            <label for="focal">초점거리</label>
+            <div class="combo">
+              <span class="input-unit" data-unit="mm">
+                <input type="number" id="focal" min="1" max="2000" step="0.1" value="58" inputmode="decimal">
+              </span>
+              <input type="range" id="focal-range" min="1" max="600" step="1" value="58" aria-label="초점거리 슬라이더">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fnumber">조리개</label>
+            <div class="combo">
+              <span class="input-unit input-unit--prefix" data-unit="f/">
+                <input type="number" id="fnumber" min="0.5" max="128" step="0.1" value="5.6" list="stops" inputmode="decimal">
+              </span>
+              <input type="range" id="fnumber-range" min="0" max="12" step="1" value="5" aria-label="조리개 슬라이더">
+            </div>
+            <datalist id="stops">
+              <option value="1.0"></option><option value="1.4"></option><option value="2.0"></option>
+              <option value="2.8"></option><option value="4.0"></option><option value="5.6"></option>
+              <option value="8"></option><option value="11"></option><option value="16"></option>
+              <option value="22"></option><option value="32"></option><option value="45"></option>
+              <option value="64"></option>
+            </datalist>
+          </div>
+
+          <details class="advanced" id="advanced">
+            <summary>고급 · 실제 심도 계산</summary>
+            <div class="field">
+              <label for="distance">초점 맞춘 거리</label>
+              <div class="combo">
+                <span class="input-unit" data-unit="m">
+                  <input type="number" id="distance" min="0.1" max="1000" step="0.1" value="3" inputmode="decimal">
+                </span>
+                <input type="range" id="distance-range" min="0.1" max="50" step="0.1" value="3" aria-label="초점 거리 슬라이더">
+              </div>
+              <div class="hint" id="coc-hint"></div>
+            </div>
+          </details>
+        </div>
       </section>
 
       <!-- 결과 -->
       <section class="results">
-        <div class="headline">
-          <div class="stat stat--accent">
-            <div class="stat__label">환산 초점거리 (FF)</div>
-            <div class="stat__value" id="r-focal">—</div>
-            <div class="stat__sub" id="r-focal-sub"></div>
+        <section class="result-hero" id="result-hero" aria-live="polite">
+          <div class="result-hero__item">
+            <span class="result-hero__label">환산 초점거리 · FF</span>
+            <span class="result-hero__value" id="r-focal">—</span>
+            <span class="result-hero__sub" id="r-focal-sub"></span>
           </div>
-          <div class="stat stat--accent">
-            <div class="stat__label">환산 조리개 (심도 등가)</div>
-            <div class="stat__value" id="r-aperture">—</div>
-            <div class="stat__sub" id="r-aperture-sub"></div>
+          <div class="result-hero__divider" aria-hidden="true"></div>
+          <div class="result-hero__item">
+            <span class="result-hero__label">환산 조리개 · 심도 등가</span>
+            <span class="result-hero__value" id="r-aperture">—</span>
+            <span class="result-hero__sub" id="r-aperture-sub"></span>
           </div>
-        </div>
+        </section>
 
         <div class="panel">
           <p class="panel__title">화각 / 포맷 <span id="est-flag"></span></p>

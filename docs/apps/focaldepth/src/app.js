@@ -26,7 +26,7 @@
     });
     fmtSel.appendChild(og);
   });
-  fmtSel.value = "6x12"; // 기본: 사용자 예시 포맷
+  fmtSel.value = "6x6"; // 기본: 6×6 중형
 
   /* ---------- 데이터 주석 ---------- */
   var nl = $("notes-list");
@@ -72,6 +72,15 @@
   $("advanced").addEventListener("toggle", update);
   fmtSel.addEventListener("change", onFormatChange);
 
+  // 모바일 하단 시트 접기/펼치기
+  var sheet = $("inputs"), handle = $("sheet-handle");
+  if (handle && sheet) {
+    handle.addEventListener("click", function () {
+      var collapsed = sheet.classList.toggle("sheet-collapsed");
+      handle.setAttribute("aria-expanded", String(!collapsed));
+    });
+  }
+
   function onFormatChange() {
     var f = INDEX[fmtSel.value];
     // 폰 등 네이티브 렌즈값이 있으면 프리필
@@ -100,6 +109,39 @@
     return fmtNum(m * 100, 1) + " cm";
   }
 
+  /* ---------- 결과 카운트업 + 강조 펄스 ---------- */
+  var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function pulse(el) {
+    if (REDUCED) return;
+    var item = el.closest(".result-hero__item");
+    el.classList.remove("is-bump"); if (item) item.classList.remove("is-bump");
+    void el.offsetWidth; // 애니메이션 재시작용 reflow
+    el.classList.add("is-bump"); if (item) item.classList.add("is-bump");
+  }
+
+  // 이전값에서 새 값으로 숫자를 보간하며 렌더. render(v) → innerHTML 문자열.
+  function setStat(el, to, render) {
+    var hadPrev = el.dataset.num !== undefined && el.dataset.num !== "";
+    var from = hadPrev ? parseFloat(el.dataset.num) : to;
+    el.dataset.num = to;
+    if (!hadPrev || from === to || REDUCED) {
+      el.innerHTML = render(to);
+      if (hadPrev && from !== to) pulse(el);
+      return;
+    }
+    pulse(el);
+    var start = performance.now(), dur = 380;
+    function frame(now) {
+      var p = Math.min(1, (now - start) / dur);
+      var e = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      el.innerHTML = render(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(frame);
+      else el.innerHTML = render(to);
+    }
+    requestAnimationFrame(frame);
+  }
+
   function update() {
     var f = INDEX[fmtSel.value];
     var focal = parseFloat($("focal").value);
@@ -110,9 +152,9 @@
     var ef = C.equivFocal(focal, f);
     var eN = C.equivAperture(N, f);
 
-    $("r-focal").innerHTML = fmtNum(ef, 1) + "<small> mm</small>";
+    setStat($("r-focal"), ef, function (v) { return fmtNum(v, 1) + "<small> mm</small>"; });
     $("r-focal-sub").textContent = (f.ref ? "기준 포맷" : focal + "mm × " + crop.toFixed(3) + " 크롭");
-    $("r-aperture").innerHTML = "f/" + fmtNum(eN, 1);
+    setStat($("r-aperture"), eN, function (v) { return "f/" + fmtNum(v, 1); });
     $("r-aperture-sub").textContent = "심도·배경흐림이 FF 환산값과 동일";
 
     $("r-crop").textContent = "×" + crop.toFixed(3);
@@ -140,6 +182,10 @@
       $("r-coc").textContent = d.coc.toFixed(3) + " mm";
       $("coc-hint").textContent = "착란원 " + d.coc.toFixed(3) + " mm";
     }
+
+    // 모바일 시트 핸들 요약 (접힘 상태에서도 현재 입력값 확인)
+    var sum = $("sheet-summary");
+    if (sum) sum.textContent = f.name + " · " + fmtNum(focal, 1) + "mm · f/" + fmtNum(N, 1);
 
     drawViz(f);
   }
